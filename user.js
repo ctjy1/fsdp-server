@@ -38,7 +38,8 @@ router.post("/register", async (req, res) => {
           .trim()
           .min(8, 'Password must be at least 8 characters')
           .max(50, 'Password can be at most 50 characters')
-          .required('Password is required.')
+          .required('Password is required.'),
+            
       });
       
     try {
@@ -57,6 +58,8 @@ router.post("/register", async (req, res) => {
     data.email = data.email.trim().toLowerCase();
     data.password = data.password.trim();
 
+    
+
     // Check email
     let user = await User.findOne({
         where: { email: data.email }
@@ -68,6 +71,7 @@ router.post("/register", async (req, res) => {
 
     // Hash passowrd
     data.password = await bcrypt.hash(data.password, 10);
+    data.userType = 'user'
     // Create user
     let result = await User.create(data);
     res.json(result);
@@ -75,6 +79,7 @@ router.post("/register", async (req, res) => {
 
 
 router.post("/login", async (req, res) => {
+    console.log("login");
     let data = req.body;
     // Trim string values
     data.email = data.email.trim().toLowerCase();
@@ -128,21 +133,8 @@ router.get("/", async (req, res) => {
     res.json(list);
 });
 
-
-
-router.get("/:id", async (req, res) => {
-    let id = req.params.id;
-    let user = await User.findByPk(id);
-    // Check id not found
-    if (!user) {
-        res.sendStatus(404);
-        return;
-    }
-    res.json(user);
-});
-
-
 router.get("/auth", validateToken, (req, res) => {
+    console.log("test auth");
     let userInfo = {
         id: req.user.id,
         email: req.user.email,
@@ -154,6 +146,19 @@ router.get("/auth", validateToken, (req, res) => {
         user: userInfo
     });
 });
+
+router.get("/:id", async (req, res) => {
+    console.log("get by id");
+    let id = req.params.id;
+    let user = await User.findByPk(id);
+    // Check id not found
+    if (!user) {
+        res.sendStatus(404);
+        return;
+    }
+    res.json(user);
+});
+
 
 router.put("/:id", async (req, res) => {
     let id = req.params.id;
